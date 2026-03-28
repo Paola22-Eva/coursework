@@ -63,7 +63,7 @@ class GradCAM:
             cam += w * activations[i]
         
         # ReLU и нормализация
-        #cam = np.maximum(cam, 0)
+        cam = np.maximum(cam, 0)
 
         # Изменяем размер до 28x28
         cam = cv2.resize(cam, (input_image.shape[2], input_image.shape[1]), 

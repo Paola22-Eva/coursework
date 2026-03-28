@@ -19,30 +19,23 @@ class GradCAM:
     def save_activation(self, module, input, output):
         """Сохраняет активации при forward проходе"""
         self.activations = output
-        print(f"  Activation captured - shape: {self.activations.shape}")
     
     def save_gradient(self, module, grad_input, grad_output):
         """Сохраняет градиенты при backward проходе"""
         self.gradients = grad_output[0]
-        print(f"  Gradient captured - shape: {self.gradients.shape}")
 
     
     def generate_heatmap(self, input_image, target_class=None):
         """Генерирует тепловую карту для изображения"""
         self.model.eval()
-
-        print(f"\n--- Generating heatmap ---")
-        print(f"Input image shape: {input_image.shape}")
         
         # Forward pass
         output = self.model(input_image.unsqueeze(0))
-        print(f"Output shape: {output.shape}")
         
         if target_class is None:
             target_class = output.argmax(dim=1).item()
 
         self.last_pred = target_class	
-        print(f"Target class: {target_class}")
         
         # Backward pass
         self.model.zero_grad()
@@ -55,9 +48,6 @@ class GradCAM:
             raise ValueError("Gradients not captured! Check hook registration.")
         if self.activations is None:
             raise ValueError("Activations not captured! Check hook registration.")
-        
-        print(f"Gradients shape before processing: {self.gradients.shape}")
-        print(f"Activations shape before processing: {self.activations.shape}")
         
         # Получаем градиенты и активации
         gradients = self.gradients.cpu().data.numpy()[0].copy()
@@ -84,7 +74,5 @@ class GradCAM:
             cam = (cam - cam.min()) / (cam.max() - cam.min()+ 1e-8)
         else:
             cam = np.zeros_like(cam)
-
-        print(f"Normalized CAM - min: {cam.min():.4f}, max: {cam.max():.4f}")
         
         return cam
